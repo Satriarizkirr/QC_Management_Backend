@@ -1,0 +1,83 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls static admin_modify %}
+
+{% block submit_buttons_bottom %}
+<style>
+    /* Sembunyikan tombol "Save and add another" dan "Save and continue editing" */
+    .submit-row input[name="_addanother"],
+    .submit-row input[name="_continue"] {
+        display: none !important;
+    }
+    /* Opsional: Perbesar tombol Save utama biar lebih jelas */
+    .submit-row input[name="_save"] {
+        min-width: 150px;
+        font-size: 14px;
+        padding: 10px 20px;
+    }
+</style>
+{{ block.super }}
+
+<div style="margin-top: 30px; margin-bottom: 30px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-radius: 4px; overflow: hidden;">
+    <h2 style="margin: 0; padding: 12px 15px; background-color: #f8f8f8; border-bottom: 1px solid #ddd; font-size: 14px; font-weight: 600; color: #333;">
+        {% trans "Recently Inputted Data (Today)" %}
+    </h2>
+    <div class="results" style="padding: 0; margin: 0;">
+        <table id="result_list" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f1f1f1; text-transform: uppercase;">
+                    <th style="padding: 8px 5px; border-bottom: 1px solid #ddd; text-align: left; font-size: 10px; color: #666; font-weight: 600;">Time Added</th>
+                    <th style="padding: 8px 5px; border-bottom: 1px solid #ddd; text-align: left; font-size: 10px; color: #666; font-weight: 600;">Date</th>
+                    <th style="padding: 8px 5px; border-bottom: 1px solid #ddd; text-align: left; font-size: 10px; color: #666; font-weight: 600;">Time Range</th>
+                    <th style="padding: 8px 5px; border-bottom: 1px solid #ddd; text-align: left; font-size: 10px; color: #666; font-weight: 600;">QA Name</th>
+                    <th style="padding: 8px 5px; border-bottom: 1px solid #ddd; text-align: left; font-size: 10px; color: #666; font-weight: 600;">QA ID</th>
+                    <th style="padding: 8px 5px; border-bottom: 1px solid #ddd; text-align: left; font-size: 10px; color: #666; font-weight: 600;">Shift</th>
+                    <th style="padding: 8px 5px; border-bottom: 1px solid #ddd; text-align: left; font-size: 10px; color: #666; font-weight: 600;">Line</th>
+                    <th style="padding: 8px 5px; border-bottom: 1px solid #ddd; text-align: left; font-size: 10px; color: #666; font-weight: 600;">Brand</th>
+                    <th style="padding: 8px 5px; border-bottom: 1px solid #ddd; text-align: left; font-size: 10px; color: #666; font-weight: 600;">Model</th>
+                    <th style="padding: 8px 5px; border-bottom: 1px solid #ddd; text-align: left; font-size: 10px; color: #666; font-weight: 600;">Size</th>
+                    <th style="padding: 8px 5px; border-bottom: 1px solid #ddd; text-align: left; font-size: 10px; color: #666; font-weight: 600;">Colour</th>
+                    <th style="padding: 8px 5px; border-bottom: 1px solid #ddd; text-align: left; font-size: 10px; color: #666; font-weight: 600;">PO No</th>
+                    <th style="padding: 8px 5px; border-bottom: 1px solid #ddd; text-align: left; font-size: 10px; color: #666; font-weight: 600;">Item Name</th>
+                    <th style="padding: 8px 5px; border-bottom: 1px solid #ddd; text-align: left; font-size: 10px; color: #666; font-weight: 600;">Prod Output</th>
+                    <th style="padding: 8px 5px; border-bottom: 1px solid #ddd; text-align: left; font-size: 10px; color: #666; font-weight: 600;">Qty Check</th>
+                    <th style="padding: 8px 5px; border-bottom: 1px solid #ddd; text-align: left; font-size: 10px; color: #666; font-weight: 600;">Defects</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for recent in recent_inputs %}
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 8px 5px; font-size: 11px;">{{ recent.created_at|time:"H:i" }}</td>
+                    <td style="padding: 8px 5px; font-size: 11px;">{{ recent.date|date:"M d, Y" }}</td>
+                    <td style="padding: 8px 5px; font-size: 11px;">{{ recent.time_range }}</td>
+                    <td style="padding: 8px 5px; font-size: 11px;">{{ recent.qa_name }}</td>
+                    <td style="padding: 8px 5px; font-size: 11px;">{{ recent.qa_id }}</td>
+                    <td style="padding: 8px 5px; font-size: 11px;">{{ recent.get_shift_display|default:recent.shift }}</td>
+                    <td style="padding: 8px 5px; font-size: 11px;">{{ recent.line }}</td>
+                    <td style="padding: 8px 5px; font-size: 11px;">{{ recent.brand }}</td>
+                    <td style="padding: 8px 5px; font-size: 11px;">{{ recent.model }}</td>
+                    <td style="padding: 8px 5px; font-size: 11px;">{{ recent.size }}</td>
+                    <td style="padding: 8px 5px; font-size: 11px;">{{ recent.colour }}</td>
+                    <td style="padding: 8px 5px; font-size: 11px; font-weight: 600;">{{ recent.po_no }}</td>
+                    <td style="padding: 8px 5px; font-size: 11px;">{{ recent.item_name }}</td>
+                    <td style="padding: 8px 5px; font-size: 11px;">{{ recent.production_output }}</td>
+                    <td style="padding: 8px 5px; font-size: 11px;">{{ recent.qty_check }}</td>
+                    <td style="padding: 8px 5px; font-size: 11px; color: #d9534f;">
+                        {% for d in recent.defects.all %}
+                            {{ d.defect_type }} ({{ d.qty }}){% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            <span style="color: #5cb85c;">-</span>
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="16" style="text-align: center; padding: 20px; color: #999; font-size: 13px;">
+                        No data inputted today yet. Your submissions will appear here.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

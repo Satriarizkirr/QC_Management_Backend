@@ -1,0 +1,212 @@
+{% extends "admin/index.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    /* Industrial Portal Design */
+    :root {
+        --industrial-blue: #2c3e50;
+        --industrial-accent: #34495e;
+        --industrial-highlight: #417690;
+        --industrial-text: #ecf0f1;
+        --industrial-bg: #f4f7f6;
+    }
+
+    #content {
+        padding: 40px 20px !important;
+        background: var(--industrial-bg);
+        min-height: 80vh;
+    }
+
+    .portal-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .portal-header {
+        margin-bottom: 40px;
+        border-left: 5px solid var(--industrial-highlight);
+        padding-left: 20px;
+    }
+
+    .portal-header h1 {
+        font-size: 2.2rem !important;
+        color: var(--industrial-blue);
+        margin: 0 !important;
+        font-weight: 700 !important;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .portal-header p {
+        color: #666;
+        font-size: 1.1rem;
+        margin-top: 5px;
+    }
+
+    /* Module Grid */
+    .module-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 25px;
+        margin-top: 30px;
+    }
+
+    .module-card {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        text-decoration: none !important;
+        transition: all 0.3s ease;
+        border: 1px solid #e0e0e0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+    }
+
+    .module-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 20px rgba(0, 0, 0, 0.08);
+        border-color: var(--industrial-highlight);
+    }
+
+    .module-icon {
+        font-size: 3rem;
+        margin-bottom: 20px;
+        background: #f0f4f7;
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        color: var(--industrial-highlight);
+    }
+
+    .module-card h2 {
+        font-size: 1.4rem !important;
+        color: var(--industrial-blue);
+        margin-bottom: 10px !important;
+        font-weight: 600 !important;
+    }
+
+    .module-card p {
+        color: #7f8c8d;
+        font-size: 0.95rem;
+        line-height: 1.4;
+    }
+
+    /* Hide default Django sidebar and app list */
+    #content-main {
+        float: none !important;
+        width: 100% !important;
+    }
+
+    .dashboard #content {
+        width: auto !important;
+    }
+
+    /* Recent Actions Styling */
+    .recent-actions-module {
+        margin-top: 50px;
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid #e0e0e0;
+    }
+
+    .recent-actions-module h2 {
+        font-size: 1.2rem !important;
+        border-bottom: 2px solid var(--industrial-bg);
+        padding-bottom: 10px;
+        margin-bottom: 15px !important;
+        color: var(--industrial-blue);
+    }
+
+    /* Hide standard lists on dashboard */
+    .dashboard .module,
+    .dashboard .app-auth,
+    .dashboard .app-inspections {
+        display: none !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="portal-container">
+    <div class="portal-header">
+        <h1>QC Management Portal</h1>
+        <p>Operational control center for quality inspection and data management.</p>
+    </div>
+
+    <div class="module-grid">
+        <!-- Input Inspection -->
+        <a href="{% url 'admin:inspections_inspectioninput_add' %}" class="module-card">
+            <div class="module-icon">📝</div>
+            <h2>INPUT INSPECTION</h2>
+            <p>Directly open the inspection form to input new quality control data.</p>
+        </a>
+
+        <!-- View Database -->
+        <a href="{% url 'admin:inspections_inspection_changelist' %}" class="module-card">
+            <div class="module-icon">📊</div>
+            <h2>INSPECTION DATA</h2>
+            <p>Access the complete inspection database, filters, and Excel export tools.</p>
+        </a>
+
+        <!-- Defect Logs -->
+        <a href="{% url 'admin:inspections_defectdetail_changelist' %}" class="module-card">
+            <div class="module-icon">🔍</div>
+            <h2>DEFECT LOGS</h2>
+            <p>Detailed analysis of defect types, quantities, and repair methods.</p>
+        </a>
+
+        <!-- Master Data -->
+        <a href="{% url 'admin:inspections_masterdata_changelist' %}" class="module-card">
+            <div class="module-icon">⚙️</div>
+            <h2>MASTER DATA</h2>
+            <p>Register and manage standard choices for QA names, brands, lines, and products.</p>
+        </a>
+
+        <!-- User Management -->
+        <a href="{% url 'admin:auth_user_changelist' %}" class="module-card">
+            <div class="module-icon">👥</div>
+            <h2>USER ACCESS</h2>
+            <p>Manage administrative users and permissions for the QC portal.</p>
+        </a>
+    </div>
+
+    <!-- We keep recent actions but styled at the bottom -->
+    <div class="recent-actions-module">
+        <h2>Recent Operational Activities</h2>
+        {% load log %}
+        {% get_admin_log 10 as admin_log for_user user %}
+        {% if not admin_log %}
+        <p>No recent activities found.</p>
+        {% else %}
+        <ul class="actionlist">
+            {% for entry in admin_log %}
+            <li
+                class="{% if entry.is_addition %}addlink{% endif %}{% if entry.is_change %}changelink{% endif %}{% if entry.is_deletion %}deletelink{% endif %}">
+                {% if entry.is_deletion or not entry.get_admin_url %}
+                {{ entry.object_repr }}
+                {% else %}
+                <a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
+                {% endif %}
+                <br>
+                {% if entry.content_type %}
+                <span class="mini quiet">{% filter capfirst %}{{ entry.content_type }}{% endfilter %}</span>
+                {% else %}
+                <span class="mini quiet">{% trans 'Unknown content type' %}</span>
+                {% endif %}
+                <span class="quiet">({{ entry.action_time|date:"DATETIME_FORMAT" }})</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

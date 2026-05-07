@@ -1,0 +1,78 @@
+/* DASHBOARD FILTER STYLE FOR INPUT FORMS */
+
+/* Target only our special fieldsets with the .horizontal-fields class */
+fieldset.horizontal-fields .form-row {
+    border-bottom: 1px solid #eee !important;
+    padding: 15px 10px !important;
+    display: block !important;
+    overflow: visible !important;
+}
+
+/* Make each field a box that flows to the right */
+fieldset.horizontal-fields div.fieldBox {
+    display: inline-block !important;
+    vertical-align: top !important;
+    margin-right: 25px !important;
+    float: none !important;
+    border: none !important;
+    padding: 0 !important;
+}
+
+/* Put labels ABOVE the input like a pro dashboard */
+fieldset.horizontal-fields div.fieldBox label {
+    display: block !important;
+    float: none !important;
+    width: auto !important;
+    text-align: left !important;
+    margin-bottom: 5px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    font-size: 10px !important;
+    color: #666 !important;
+    letter-spacing: 0.5px !important;
+}
+
+/* Adjust input widths for uniformity */
+fieldset.horizontal-fields div.fieldBox input,
+fieldset.horizontal-fields div.fieldBox select {
+    margin-left: 0 !important;
+    padding: 5px 8px !important;
+    border: 1px solid #ccc !important;
+    border-radius: 4px !important;
+    min-width: 150px !important;
+    height: 35px !important;
+    box-sizing: border-box !important;
+    font-size: 13px !important;
+}
+
+/* Fix for date input which usually has a specific widget */
+fieldset.horizontal-fields .field-date input {
+    width: 120px !important;
+    min-width: 120px !important;
+}
+
+fieldset.horizontal-fields .field-date .datetimeshortcuts {
+    font-size: 10px !important;
+    margin-top: 2px !important;
+    display: block !important;
+}
+
+/* Give extra width to long fields */
+fieldset.horizontal-fields .field-item_name select,
+fieldset.horizontal-fields .field-item_name input,
+fieldset.horizontal-fields .field-qa_name select {
+    min-width: 200px !important;
+}
+
+/* Restrict width for po_no */
+fieldset.horizontal-fields .field-po_no input {
+    width: 150px !important;
+    min-width: 150px !important;
+}
+
+/* Make help text smaller and absolute if needed */
+fieldset.horizontal-fields .help {
+    display: block !important;
+    font-size: 9px !important;
+    margin-top: 2px !important;
+}

@@ -3,7 +3,7 @@ from django.urls import path, include
 
 admin.site.site_header = "Quality Administration"
 admin.site.site_title = "Quality Admin Portal"
-admin.site.index_title = "Welcome to QC Tracker Portal"
+admin.site.index_title = "Welcome to QC Management System"
 
 urlpatterns = [
     path('admin/', admin.site.urls),

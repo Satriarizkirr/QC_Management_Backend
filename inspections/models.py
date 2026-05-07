@@ -37,3 +37,34 @@ class DefectDetail(models.Model):
 
     def __str__(self):
         return f"{self.defect_type} ({self.qty})"
+
+
+class InspectionInput(Inspection):
+    class Meta:
+        proxy = True
+        verbose_name = "Input Inspection"
+        verbose_name_plural = "Input Inspections"
+
+class MasterData(models.Model):
+    CATEGORY_CHOICES = [
+        ('TIME', 'Time Range'),
+        ('LINE', 'Line'),
+        ('QA_NAME', 'QA Name'),
+        ('QA_ID', 'QA ID'),
+        ('BRAND', 'Brand'),
+        ('MODEL', 'Model'),
+        ('SIZE', 'Size'),
+        ('COLOUR', 'Colour'),
+        ('ITEM', 'Item Name'),
+    ]
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
+    value = models.CharField(max_length=150)
+
+    class Meta:
+        unique_together = ('category', 'value')
+        verbose_name = "Master Data"
+        verbose_name_plural = "Master Data"
+
+    def __str__(self):
+        return f"{self.get_category_display()}: {self.value}"
+

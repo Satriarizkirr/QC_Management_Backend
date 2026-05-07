@@ -1,6 +1,280 @@
 {% extends "admin/change_list.html" %}
 {% load i18n %}
 
+{% block extrastyle %}
+    {{ block.super }}
+    <style>
+        /* Toolbar Container - Single Horizontal Line */
+        #toolbar {
+            display: flex;
+            align-items: center; /* Center vertically */
+            justify-content: flex-start;
+            flex-wrap: nowrap !important; /* Force single horizontal line */
+            gap: 20px;
+            padding: 15px;
+            background: #f8f8f8;
+            border-bottom: 1px solid #e0e0e0;
+            margin-bottom: 15px;
+            overflow-x: auto; /* Scroll if screen too narrow */
+        }
+        #toolbar form#changelist-search {
+            display: none !important;
+        }
+        #toolbar form#changelist-search input[type="text"] {
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        #toolbar form#changelist-search input[type="submit"] {
+            background: #417690;
+            color: #fff;
+            border-radius: 4px;
+            border: none;
+            padding: 6px 12px;
+            cursor: pointer;
+        }
+
+        /* Filter Container - Single Horizontal Line */
+        #changelist-filter {
+            position: static !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: transparent !important;
+            border: none !important;
+            display: flex !important;
+            align-items: center !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important; /* Force single horizontal line */
+            gap: 20px !important;
+            order: 2; /* Filters after search */
+            visibility: hidden; /* Hide initially to prevent FOUC */
+        }
+        #changelist-filter h2 {
+            display: none !important;
+        }
+
+        /* Make each filter container flow inline instead of 100% width */
+        #changelist-filter details,
+        .filter-item-wrapper {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: 10px !important;
+            width: auto !important; /* Force inline flow */
+            flex: 0 0 auto !important; /* Prevent expanding */
+        }
+
+        /* Styling for filter elements */
+        #changelist-filter h3, #changelist-filter summary {
+            margin: 0 !important;
+            font-size: 13px !important;
+            font-weight: bold !important;
+            color: #444 !important;
+            text-transform: uppercase;
+            list-style: none; /* Hide details arrow */
+            white-space: nowrap; /* Don't wrap text */
+        }
+        
+        #changelist-filter summary::-webkit-details-marker {
+            display: none;
+        }
+
+        #changelist-filter select {
+            padding: 5px 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            min-width: 120px;
+            font-size: 13px;
+        }
+
+        /* Date range details block (move to right) */
+        #changelist-filter details {
+            order: 10; /* Move to the right */
+        }
+
+        /* Clean up Rangefilter visually */
+        .admindatefilter {
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+            background: transparent !important;
+            position: relative; /* Relative anchor for calendar box */
+        }
+        .admindatefilter form {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+            margin: 0 !important;
+        }
+        .admindatefilter p {
+            margin: 0 !important;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+        .admindatefilter input[type="text"] {
+            width: 90px;
+            padding: 5px 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .admindatefilter .button, .admindatefilter input[type="submit"], .admindatefilter input[type="reset"] {
+            margin: 0 !important;
+            padding: 5px 12px !important;
+            background: #417690;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .admindatefilter input[type="reset"] {
+            background: #ba2121;
+        }
+        
+        /* Keep calendar icon horizontal and hide messy timezone warnings */
+        .admindatefilter .help, 
+        .admindatefilter .timezonewarning, 
+        .admindatefilter br {
+            display: none !important;
+        }
+        
+        .datetimeshortcuts {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 4px !important;
+            margin-left: 5px !important;
+            font-weight: normal !important;
+            position: static !important; /* Prevent overlap */
+        }
+        
+        .datetimeshortcuts a {
+            color: #417690;
+        }
+
+        /* Ensure calendar popup stays on top and is visible */
+        .calendarbox {
+            z-index: 9999 !important;
+        }
+
+        .filter-item-wrapper {
+            order: 2;
+        }
+
+        /* Hide "Clear All Filters" - direct child <a> of filter container */
+        /* Safe: filter options are inside <ul>/<details>, never a direct <a> child */
+        #changelist-filter > a {
+            display: none !important;
+        }
+
+        #changelist .changelist-form-container {
+            width: 100% !important;
+            border: none;
+        }
+    </style>
+{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <script>
+        // DOMContentLoaded fires after HTML parsed - much faster than 'load'
+        // This prevents FOUC (Flash of Unstyled Content) where filter shows as raw sidebar
+        document.addEventListener("DOMContentLoaded", function() {
+            var filter = document.getElementById('changelist-filter');
+            var toolbar = document.getElementById('toolbar');
+            
+            if (filter && toolbar) {
+                // 1. Move filter to toolbar
+                toolbar.appendChild(filter);
+
+                // 2. Open any <details> tags and force SIDE-BY-SIDE layout
+                var details = filter.querySelectorAll('details');
+                details.forEach(function(d) {
+                    d.setAttribute('open', '');
+                    d.style.display = 'flex';
+                    d.style.flexDirection = 'row'; /* Side by side! */
+                    d.style.alignItems = 'center';
+                    d.style.gap = '10px';
+                    
+                    var summary = d.querySelector('summary');
+                    if (summary) {
+                        summary.innerText = summary.textContent.replace(/By /i, '').trim() + ':';
+                    }
+                });
+
+                // 3. Wrap H3 and its following siblings into a SIDE-BY-SIDE flex row
+                var children = Array.from(filter.childNodes);
+                var currentWrapper = null;
+                
+                children.forEach(function(node) {
+                    if (node.tagName === 'H3') {
+                        currentWrapper = document.createElement('div');
+                        currentWrapper.className = 'filter-item-wrapper';
+                        currentWrapper.style.display = 'flex';
+                        currentWrapper.style.flexDirection = 'row'; /* Side by side! */
+                        currentWrapper.style.alignItems = 'center';
+                        currentWrapper.style.gap = '10px';
+                        
+                        // Clean up label text
+                        node.innerText = node.textContent.replace(/By /i, '').trim() + ':';
+                        
+                        filter.insertBefore(currentWrapper, node);
+                        currentWrapper.appendChild(node);
+                    } else if (currentWrapper) {
+                        if (node.tagName === 'DETAILS' || node.tagName === 'H2') {
+                            currentWrapper = null;
+                        } else if (node.nodeType === 1 || (node.nodeType === 3 && node.textContent.trim() !== '')) {
+                            currentWrapper.appendChild(node);
+                        }
+                    }
+                });
+
+                // 4. Unwrap or Convert ULs
+                var uls = filter.querySelectorAll('ul');
+                uls.forEach(function(ul) {
+                    var existingSelect = ul.querySelector('select');
+                    if (existingSelect) {
+                        // Brand and QA Name already have <select> from django-admin-list-filter-dropdown
+                        ul.parentNode.insertBefore(existingSelect, ul);
+                        ul.remove(); // Safely remove the UL container
+                    } else {
+                        // Shift is a standard Django list, convert it to a dropdown manually
+                        var select = document.createElement('select');
+                        select.onchange = function() {
+                            if (this.value) {
+                                window.location.href = this.value;
+                            }
+                        };
+                        var options = ul.querySelectorAll('li');
+                        options.forEach(function(li) {
+                            var a = li.querySelector('a');
+                            if (a) {
+                                var option = document.createElement('option');
+                                option.value = a.href;
+                                option.innerHTML = a.innerHTML;
+                                if (li.classList.contains('selected')) {
+                                    option.selected = true;
+                                }
+                                select.appendChild(option);
+                            }
+                        });
+                        
+                        if (options.length > 0) {
+                            ul.parentNode.insertBefore(select, ul);
+                        }
+                        ul.remove(); // Remove the UL completely
+                    }
+                });
+            }   // end if (filter && toolbar)
+
+            // Reveal filter AFTER all JS manipulation is done - prevents FOUC
+            if (filter) filter.style.visibility = 'visible';
+        });
+    </script>
+{% endblock %}
+
 {% block object-tools-items %}
     {{ block.super }}
     <li>

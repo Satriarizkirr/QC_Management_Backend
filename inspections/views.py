@@ -58,23 +58,34 @@ class DashboardStatsView(APIView):
             })
 
         # Trend Data (Group by date)
-        trend = inspections.values('date').annotate(
+        # Fix: Aggregating multiple fields with joins can cause duplication. 
+        # We calculate header stats and defect stats separately.
+        trend_headers = inspections.values('date').annotate(
             production=Sum('production_output'),
-            checked=Sum('qty_check'),
+            checked=Sum('qty_check')
+        ).order_by('date')
+        
+        # Get defects mapping for those dates
+        trend_defects = inspections.values('date').annotate(
             defects_count=Sum('defects__qty')
         ).order_by('date')
+        
+        defects_map = {str(d['date']): d['defects_count'] or 0 for d in trend_defects}
         
         trend_data = []
         weekly_dict = {}
         monthly_dict = {}
 
-        for t in trend:
+        for t in trend_headers:
             d = t['date']
             if not d: continue
             
+            d_str = str(d)
+            defects_count = defects_map.get(d_str, 0)
+            
             trend_data.append({
-                'date': str(d),
-                'defects': t['defects_count'] or 0,
+                'date': d_str,
+                'defects': defects_count,
                 'checked': t['checked'] or 0,
             })
             
@@ -82,13 +93,13 @@ class DashboardStatsView(APIView):
             if week_str not in weekly_dict:
                 weekly_dict[week_str] = {'checked': 0, 'defects': 0}
             weekly_dict[week_str]['checked'] += (t['checked'] or 0)
-            weekly_dict[week_str]['defects'] += (t['defects_count'] or 0)
+            weekly_dict[week_str]['defects'] += defects_count
             
             month_str = d.strftime('%Y-%m')
             if month_str not in monthly_dict:
                 monthly_dict[month_str] = {'checked': 0, 'defects': 0}
             monthly_dict[month_str]['checked'] += (t['checked'] or 0)
-            monthly_dict[month_str]['defects'] += (t['defects_count'] or 0)
+            monthly_dict[month_str]['defects'] += defects_count
 
         trend_weekly_data = []
         for k, v in sorted(weekly_dict.items()):
@@ -126,14 +137,19 @@ class DashboardStatsView(APIView):
         weekly_inspections = base_inspections.filter(date__gte=week_ago)
         monthly_inspections = base_inspections.filter(date__gte=month_ago)
 
-        w_totals = weekly_inspections.aggregate(prod=Sum('production_output'), chk=Sum('qty_check'), total_def=Sum('defects__qty'))
-        w_chk = w_totals['chk'] or 0
-        w_def = w_totals['total_def'] or 0
+        # Fix: Separate header and defect aggregation to prevent double counting
+        w_header = weekly_inspections.aggregate(prod=Sum('production_output'), chk=Sum('qty_check'))
+        w_defects = weekly_inspections.aggregate(total_def=Sum('defects__qty'))
+        
+        w_chk = w_header['chk'] or 0
+        w_def = w_defects['total_def'] or 0
         w_rate = (w_def / w_chk * 100) if w_chk > 0 else 0
 
-        m_totals = monthly_inspections.aggregate(prod=Sum('production_output'), chk=Sum('qty_check'), total_def=Sum('defects__qty'))
-        m_chk = m_totals['chk'] or 0
-        m_def = m_totals['total_def'] or 0
+        m_header = monthly_inspections.aggregate(prod=Sum('production_output'), chk=Sum('qty_check'))
+        m_defects = monthly_inspections.aggregate(total_def=Sum('defects__qty'))
+        
+        m_chk = m_header['chk'] or 0
+        m_def = m_defects['total_def'] or 0
         m_rate = (m_def / m_chk * 100) if m_chk > 0 else 0
 
         return Response({
