@@ -1,0 +1,89 @@
+# ========================
+# Python
+# ========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+*.pyc
+
+# ========================
+# Virtual Environment
+# ========================
+venv/
+env/
+.env/
+.venv/
+
+# ========================
+# Environment Variables (RAHASIA!)
+# ========================
+.env
+.env.*
+*.env
+secrets.json
+
+# ========================
+# Django
+# ========================
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+
+# ========================
+# Migrations (opsional, tergantung tim)
+# Uncomment baris bawah jika tidak mau track migrations
+# ========================
+# */migrations/
+
+# ========================
+# Static files (generated)
+# ========================
+staticfiles/
+static_collected/
+
+# ========================
+# IDE & Editor
+# ========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+pyrefly.toml
+
+# ========================
+# OS
+# ========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ========================
+# Testing & Coverage
+# ========================
+.coverage
+htmlcov/
+.pytest_cache/
+coverage.xml
+*.cover
+
+# ========================
+# Build & Distribution
+# ========================
+dist/
+build/
+*.egg-info/
+*.egg
+
+# ========================
+# Temporary & Scratch files
+# ========================
+scratch/
+test_api.py
+*.tmp
+*.bak

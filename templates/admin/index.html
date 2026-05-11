@@ -48,9 +48,21 @@
     /* Module Grid */
     .module-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        grid-template-columns: repeat(4, 1fr);
         gap: 25px;
         margin-top: 30px;
+    }
+
+    @media (max-width: 1200px) {
+        .module-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 600px) {
+        .module-grid {
+            grid-template-columns: 1fr;
+        }
     }
 
     .module-card {
@@ -74,7 +86,6 @@
     }
 
     .module-icon {
-        font-size: 3rem;
         margin-bottom: 20px;
         background: #f0f4f7;
         width: 80px;
@@ -84,6 +95,22 @@
         justify-content: center;
         border-radius: 50%;
         color: var(--industrial-highlight);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .module-card:hover .module-icon {
+        background: var(--industrial-highlight);
+        color: white;
+        transform: scale(1.08);
+        box-shadow: 0 4px 12px rgba(65, 118, 144, 0.25);
+    }
+
+    .svg-icon {
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .module-card:hover .svg-icon {
+        transform: rotate(-10deg) scale(1.05);
     }
 
     .module-card h2 {
@@ -143,37 +170,111 @@
     </div>
 
     <div class="module-grid">
-        <!-- Input Inspection -->
+        <!-- Sewing Input -->
         <a href="{% url 'admin:inspections_inspectioninput_add' %}" class="module-card">
-            <div class="module-icon">📝</div>
-            <h2>INPUT INSPECTION</h2>
-            <p>Directly open the inspection form to input new quality control data.</p>
+            <div class="module-icon">
+                <svg class="svg-icon" viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+            </div>
+            <h2>SEWING INPUT</h2>
+            <p>Directly open the inspection form to input new Sewing quality control data.</p>
         </a>
 
-        <!-- View Database -->
+        <!-- Sewing Data -->
         <a href="{% url 'admin:inspections_inspection_changelist' %}" class="module-card">
-            <div class="module-icon">📊</div>
-            <h2>INSPECTION DATA</h2>
-            <p>Access the complete inspection database, filters, and Excel export tools.</p>
+            <div class="module-icon">
+                <svg class="svg-icon" viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                    <line x1="2" y1="20" x2="22" y2="20"></line>
+                </svg>
+            </div>
+            <h2>SEWING DATA</h2>
+            <p>Access the complete Sewing inspection database, filters, and Excel export tools.</p>
+        </a>
+
+        <!-- Assembling Input -->
+        <a href="{% url 'admin:inspections_assemblinginspectioninput_add' %}" class="module-card">
+            <div class="module-icon">
+                <svg class="svg-icon" viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                </svg>
+            </div>
+            <h2>ASSEMBLING INPUT</h2>
+            <p>Directly open the inspection form to input new Assembling quality control data.</p>
+        </a>
+
+        <!-- Assembling Data -->
+        <a href="{% url 'admin:inspections_assemblinginspection_changelist' %}" class="module-card">
+            <div class="module-icon">
+                <svg class="svg-icon" viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+                    <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"></path>
+                </svg>
+            </div>
+            <h2>ASSEMBLING DATA</h2>
+            <p>Access the complete Assembling inspection database and records.</p>
         </a>
 
         <!-- Defect Logs -->
         <a href="{% url 'admin:inspections_defectdetail_changelist' %}" class="module-card">
-            <div class="module-icon">🔍</div>
-            <h2>DEFECT LOGS</h2>
-            <p>Detailed analysis of defect types, quantities, and repair methods.</p>
+            <div class="module-icon">
+                <svg class="svg-icon" viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+            </div>
+            <h2>SEWING DEFECT LOGS</h2>
+            <p>Detailed analysis of defect types, quantities, and repair methods for Sewing.</p>
         </a>
 
-        <!-- Master Data -->
+        <!-- Master Data Sewing -->
         <a href="{% url 'admin:inspections_masterdata_changelist' %}" class="module-card">
-            <div class="module-icon">⚙️</div>
-            <h2>MASTER DATA</h2>
-            <p>Register and manage standard choices for QA names, brands, lines, and products.</p>
+            <div class="module-icon">
+                <svg class="svg-icon" viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="4" y1="21" x2="4" y2="14"></line>
+                    <line x1="4" y1="10" x2="4" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12" y2="3"></line>
+                    <line x1="20" y1="21" x2="20" y2="16"></line>
+                    <line x1="20" y1="12" x2="20" y2="3"></line>
+                    <line x1="2" y1="14" x2="6" y2="14"></line>
+                    <line x1="10" y1="8" x2="14" y2="8"></line>
+                    <line x1="18" y1="16" x2="22" y2="16"></line>
+                </svg>
+            </div>
+            <h2>SEWING MASTER DATA</h2>
+            <p>Register QA names, brands, lines, and models for Sewing.</p>
+        </a>
+
+        <!-- Master Data Assembling -->
+        <a href="{% url 'admin:inspections_assemblingmasterdata_changelist' %}" class="module-card">
+            <div class="module-icon">
+                <svg class="svg-icon" viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+            </div>
+            <h2>ASSEMBLING MASTER DATA</h2>
+            <p>Register QA names, brands, lines, and models for Assembling.</p>
         </a>
 
         <!-- User Management -->
         <a href="{% url 'admin:auth_user_changelist' %}" class="module-card">
-            <div class="module-icon">👥</div>
+            <div class="module-icon">
+                <svg class="svg-icon" viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+            </div>
             <h2>USER ACCESS</h2>
             <p>Manage administrative users and permissions for the QC portal.</p>
         </a>
