@@ -76,3 +76,9 @@ fieldset.horizontal-fields .help {
     font-size: 9px !important;
     margin-top: 2px !important;
 }
+
+/* Hide native datalist arrow indicator on Chrome/Safari/Edge for a cleaner look */
+fieldset.horizontal-fields div.fieldBox input::-webkit-calendar-picker-indicator {
+    display: none !important;
+}
+

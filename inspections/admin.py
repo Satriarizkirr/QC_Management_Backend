@@ -45,43 +45,19 @@ class InspectionForm(forms.ModelForm):
         ('23.45-00.45', '23.45-00.45'),
     ]
 
-    time_range = forms.ChoiceField(choices=TIME_CHOICES, required=False)
-    line = forms.ChoiceField(choices=[], required=False)
-    qa_name = forms.ChoiceField(choices=[], required=False)
-    qa_id = forms.ChoiceField(choices=[], required=False)
-    brand = forms.ChoiceField(choices=[], required=False)
-    model = forms.ChoiceField(choices=[], required=False)
-    size = forms.ChoiceField(choices=[], required=False)
-    colour = forms.ChoiceField(choices=[], required=False)
-    item_name = forms.ChoiceField(choices=[], required=False)
+    time_range = forms.CharField(widget=forms.TextInput(attrs={'list': 'datalist_time', 'autocomplete': 'off'}), required=False)
+    line = forms.CharField(widget=forms.TextInput(attrs={'list': 'datalist_line', 'autocomplete': 'off'}), required=False)
+    qa_name = forms.CharField(widget=forms.TextInput(attrs={'list': 'datalist_qa_name', 'autocomplete': 'off'}), required=False)
+    qa_id = forms.CharField(widget=forms.TextInput(attrs={'list': 'datalist_qa_id', 'autocomplete': 'off'}), required=False)
+    brand = forms.CharField(widget=forms.TextInput(attrs={'list': 'datalist_brand', 'autocomplete': 'off'}), required=False)
+    model = forms.CharField(widget=forms.TextInput(attrs={'list': 'datalist_model', 'autocomplete': 'off'}), required=False)
+    size = forms.CharField(widget=forms.TextInput(attrs={'list': 'datalist_size', 'autocomplete': 'off'}), required=False)
+    colour = forms.CharField(widget=forms.TextInput(attrs={'list': 'datalist_colour', 'autocomplete': 'off'}), required=False)
+    item_name = forms.CharField(widget=forms.TextInput(attrs={'list': 'datalist_item', 'autocomplete': 'off'}), required=False)
 
     class Meta:
         model = Inspection
         fields = '__all__'
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Fetch choices dynamically from MasterData
-        categories = {
-            'line': 'LINE', 'qa_name': 'QA_NAME',
-            'qa_id': 'QA_ID', 'brand': 'BRAND', 'model': 'MODEL',
-            'size': 'SIZE', 'colour': 'COLOUR', 'item_name': 'ITEM',
-        }
-        try:
-            master_qs = MasterData.objects.all()
-            grouped = {cat: [] for cat in categories.values()}
-            for md in master_qs:
-                if md.category in grouped:
-                    grouped[md.category].append((md.value, md.value))
-            
-            for field, cat in categories.items():
-                sort_fn = natural_sort_key if cat == 'LINE' else lambda x: (0, 0, str(x[0]).lower())
-                choices = [('', '---------')] + sorted(grouped[cat], key=sort_fn)
-                if field in self.fields:
-                    self.fields[field].choices = choices  # type: ignore[assignment]
-        except Exception:
-            # Fallback if DB is not ready during migrations
-            pass
 
 @admin.register(MasterData)
 class MasterDataAdmin(admin.ModelAdmin):
@@ -136,6 +112,24 @@ class InspectionAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         """Remove Add button from the main table so users use the specific Input menu."""
         return False
+
+    def render_change_form(self, request, context, add=False, change=False, form_url='', obj=None):
+        master_qs = MasterData.objects.all()
+        categories = {
+            'TIME': [choice[0] for choice in InspectionForm.TIME_CHOICES if choice[0]],
+            'LINE': [], 'QA_NAME': [], 'QA_ID': [], 'BRAND': [],
+            'MODEL': [], 'SIZE': [], 'COLOUR': [], 'ITEM': []
+        }
+        for md in master_qs:
+            if md.category in categories and md.value not in categories[md.category]:
+                categories[md.category].append(md.value)
+        for cat in categories:
+            if cat == 'LINE':
+                categories[cat] = sorted(categories[cat], key=lambda x: (0, float(x), x) if x.replace('.','',1).isdigit() else (1, 0, str(x).lower()))
+            elif cat != 'TIME':
+                categories[cat] = sorted(categories[cat], key=lambda x: str(x).lower())
+        context['master_data_lists'] = categories
+        return super().render_change_form(request, context, add, change, form_url, obj)
 
     def get_urls(self):
         urls = super().get_urls()
@@ -247,11 +241,25 @@ class InspectionInputAdmin(admin.ModelAdmin):
     
     def render_change_form(self, request, context, add=False, change=False, form_url='', obj=None):
         today = timezone.now().date()
-        # Get up to 15 most recent inspections added today
         recent_inputs = Inspection.objects.filter(created_at__date=today).order_by('-created_at')[:15]
-        # Prefetch related defects so it's efficient to display them in the template
         recent_inputs = recent_inputs.prefetch_related('defects')
         context['recent_inputs'] = recent_inputs
+        
+        master_qs = MasterData.objects.all()
+        categories = {
+            'TIME': [choice[0] for choice in InspectionForm.TIME_CHOICES if choice[0]],
+            'LINE': [], 'QA_NAME': [], 'QA_ID': [], 'BRAND': [],
+            'MODEL': [], 'SIZE': [], 'COLOUR': [], 'ITEM': []
+        }
+        for md in master_qs:
+            if md.category in categories and md.value not in categories[md.category]:
+                categories[md.category].append(md.value)
+        for cat in categories:
+            if cat == 'LINE':
+                categories[cat] = sorted(categories[cat], key=lambda x: (0, float(x), x) if x.replace('.','',1).isdigit() else (1, 0, str(x).lower()))
+            elif cat != 'TIME':
+                categories[cat] = sorted(categories[cat], key=lambda x: str(x).lower())
+        context['master_data_lists'] = categories
         return super().render_change_form(request, context, add, change, form_url, obj)
     
     def has_module_permission(self, request):
@@ -368,37 +376,17 @@ class AssemblingDefectDetailInline(admin.TabularInline):
     extra = 1
 
 class AssemblingInspectionForm(forms.ModelForm):
-    line = forms.ChoiceField(choices=[], required=False)
-    qa_name = forms.ChoiceField(choices=[], required=False)
-    qa_id = forms.ChoiceField(choices=[], required=False)
-    brand = forms.ChoiceField(choices=[], required=False)
-    model = forms.ChoiceField(choices=[], required=False)
-    size = forms.ChoiceField(choices=[], required=False)
-    colour = forms.ChoiceField(choices=[], required=False)
+    line = forms.CharField(widget=forms.TextInput(attrs={'list': 'datalist_line', 'autocomplete': 'off'}), required=False)
+    qa_name = forms.CharField(widget=forms.TextInput(attrs={'list': 'datalist_qa_name', 'autocomplete': 'off'}), required=False)
+    qa_id = forms.CharField(widget=forms.TextInput(attrs={'list': 'datalist_qa_id', 'autocomplete': 'off'}), required=False)
+    brand = forms.CharField(widget=forms.TextInput(attrs={'list': 'datalist_brand', 'autocomplete': 'off'}), required=False)
+    model = forms.CharField(widget=forms.TextInput(attrs={'list': 'datalist_model', 'autocomplete': 'off'}), required=False)
+    size = forms.CharField(widget=forms.TextInput(attrs={'list': 'datalist_size', 'autocomplete': 'off'}), required=False)
+    colour = forms.CharField(widget=forms.TextInput(attrs={'list': 'datalist_colour', 'autocomplete': 'off'}), required=False)
 
     class Meta:
         model = AssemblingInspection
         fields = '__all__'
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        categories = {
-            'line': 'LINE', 'qa_name': 'QA_NAME', 'qa_id': 'QA_ID',
-            'brand': 'BRAND', 'model': 'MODEL', 'size': 'SIZE', 'colour': 'COLOUR'
-        }
-        try:
-            master_qs = AssemblingMasterData.objects.all()
-            grouped = {cat: [] for cat in categories.values()}
-            for md in master_qs:
-                if md.category in grouped:
-                    grouped[md.category].append((md.value, md.value))
-            for field, cat in categories.items():
-                sort_fn = natural_sort_key if cat == 'LINE' else lambda x: (0, 0, str(x[0]).lower())
-                choices = [('', '---------')] + sorted(grouped[cat], key=sort_fn)
-                if field in self.fields:
-                    self.fields[field].choices = choices  # type: ignore[assignment]
-        except Exception:
-            pass
 
 @admin.register(AssemblingInspection)
 class AssemblingInspectionAdmin(admin.ModelAdmin):
@@ -448,6 +436,23 @@ class AssemblingInspectionAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         return False
 
+    def render_change_form(self, request, context, add=False, change=False, form_url='', obj=None):
+        master_qs = AssemblingMasterData.objects.all()
+        categories = {
+            'LINE': [], 'QA_NAME': [], 'QA_ID': [], 'BRAND': [],
+            'MODEL': [], 'SIZE': [], 'COLOUR': []
+        }
+        for md in master_qs:
+            if md.category in categories and md.value not in categories[md.category]:
+                categories[md.category].append(md.value)
+        for cat in categories:
+            if cat == 'LINE':
+                categories[cat] = sorted(categories[cat], key=lambda x: (0, float(x), x) if x.replace('.','',1).isdigit() else (1, 0, str(x).lower()))
+            else:
+                categories[cat] = sorted(categories[cat], key=lambda x: str(x).lower())
+        context['master_data_lists'] = categories
+        return super().render_change_form(request, context, add, change, form_url, obj)
+
     def get_defects(self, obj):
         defects = obj.defects.all()
         if not defects:
@@ -483,6 +488,21 @@ class AssemblingInspectionInputAdmin(admin.ModelAdmin):
         recent_inputs = AssemblingInspection.objects.filter(created_at__date=today).order_by('-created_at')[:15]
         recent_inputs = recent_inputs.prefetch_related('defects')
         context['recent_inputs'] = recent_inputs
+        
+        master_qs = AssemblingMasterData.objects.all()
+        categories = {
+            'LINE': [], 'QA_NAME': [], 'QA_ID': [], 'BRAND': [],
+            'MODEL': [], 'SIZE': [], 'COLOUR': []
+        }
+        for md in master_qs:
+            if md.category in categories and md.value not in categories[md.category]:
+                categories[md.category].append(md.value)
+        for cat in categories:
+            if cat == 'LINE':
+                categories[cat] = sorted(categories[cat], key=lambda x: (0, float(x), x) if x.replace('.','',1).isdigit() else (1, 0, str(x).lower()))
+            else:
+                categories[cat] = sorted(categories[cat], key=lambda x: str(x).lower())
+        context['master_data_lists'] = categories
         return super().render_change_form(request, context, add, change, form_url, obj)
     
     def has_module_permission(self, request):

@@ -3,109 +3,6 @@
 
 {% block extrahead %}
 {{ block.super }}
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<style>
-    /* === Select2 - Django Admin Integration === */
-
-    /* Main select box */
-    .select2-container .select2-selection--single {
-        height: 30px !important;
-        border: 1px solid #ccc !important;
-        border-radius: 4px !important;
-        background: #fff !important;
-    }
-    .select2-container--default .select2-selection--single .select2-selection__rendered {
-        line-height: 30px !important;
-        padding-left: 8px !important;
-        padding-right: 30px !important;
-        color: #333 !important;
-        font-size: 13px !important;
-    }
-    .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: 28px !important;
-        top: 1px !important;
-    }
-
-    /* Clear (×) button — make it visible */
-    .select2-container--default .select2-selection--single .select2-selection__clear {
-        visibility: visible !important;
-        color: #999 !important;
-        font-size: 16px !important;
-        font-weight: bold !important;
-        line-height: 1 !important;
-        margin-right: 6px !important;
-        float: right !important;
-        cursor: pointer !important;
-        position: relative !important;
-        z-index: 1 !important;
-        margin-top: 6px !important;
-    }
-    .select2-container--default .select2-selection--single .select2-selection__clear:hover {
-        color: #d9534f !important;
-    }
-
-    /* Search input inside dropdown */
-    .select2-search--dropdown {
-        padding: 6px !important;
-        background: #fafafa !important;
-        border-bottom: 1px solid #eee !important;
-    }
-    .select2-search--dropdown .select2-search__field {
-        width: 100% !important;
-        border: 1px solid #b0b0b0 !important;
-        border-radius: 3px !important;
-        padding: 5px 8px !important;
-        font-size: 13px !important;
-        color: #333 !important;
-        background: #fff !important;
-        outline: none !important;
-        box-shadow: inset 0 1px 3px rgba(0,0,0,0.08) !important;
-    }
-    .select2-search--dropdown .select2-search__field:focus {
-        border-color: #417690 !important;
-        box-shadow: 0 0 0 2px rgba(65,118,144,0.2) !important;
-    }
-
-    /* Dropdown list */
-    .select2-dropdown {
-        border: 1px solid #ccc !important;
-        border-radius: 4px !important;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.12) !important;
-        font-size: 13px !important;
-    }
-    .select2-results__option {
-        padding: 6px 10px !important;
-        color: #333 !important;
-    }
-    .select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
-        background-color: #417690 !important;
-        color: #fff !important;
-    }
-    .select2-container {
-        width: 100% !important;
-    }
-</style>
-
-{# Expose django.jQuery as global so Select2 CDN can attach to it #}
-<script>window.jQuery = django.jQuery;</script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    var $ = django.jQuery;
-    var selectFields = [
-        '#id_shift', '#id_line',
-        '#id_qa_name', '#id_qa_id', '#id_brand',
-        '#id_model', '#id_size', '#id_colour'
-    ];
-    selectFields.forEach(function(selector) {
-        $(selector).select2({
-            allowClear: true,
-            placeholder: '---------',
-            width: '100%'
-        });
-    });
-});
-</script>
 {% endblock %}
 
 {% block content %}
@@ -213,4 +110,13 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 </div>
 
+{% if master_data_lists %}
+  {% for cat, values in master_data_lists.items %}
+    <datalist id="datalist_{{ cat|lower }}">
+      {% for val in values %}
+        <option value="{{ val }}">
+      {% endfor %}
+    </datalist>
+  {% endfor %}
+{% endif %}
 {% endblock %}
