@@ -398,7 +398,7 @@ class AssemblingInspectionAdmin(admin.ModelAdmin):
     list_display = (  # type: ignore
         'date', 'qa_name', 'qa_id', 'shift', 
         'line', 'brand', 'model', 'size', 'colour', 
-        'po_no', 'inspection_quantity', 'qty_check_hours', 'get_defects'
+        'po_no', 'qty_check_hours', 'get_defects'
     )
     
     fieldsets = (
@@ -407,7 +407,7 @@ class AssemblingInspectionAdmin(admin.ModelAdmin):
             'fields': (
                 ('date', 'shift', 'line', 'qa_name', 'qa_id'),
                 ('brand', 'model', 'size', 'colour', 'po_no'),
-                ('inspection_quantity', 'qty_check_hours'),
+                ('qty_check_hours',),
             )
         }),
     )
@@ -427,8 +427,8 @@ class AssemblingInspectionAdmin(admin.ModelAdmin):
         obj = form.instance
         total_defects = sum([defect.qty for defect in obj.defects.all()])
         obj.defect_quantity = total_defects
-        if obj.inspection_quantity and obj.inspection_quantity > 0:
-            obj.defect_rate = total_defects / obj.inspection_quantity
+        if obj.qty_check_hours and obj.qty_check_hours > 0:
+            obj.defect_rate = total_defects / obj.qty_check_hours
         else:
             obj.defect_rate = 0.0
         obj.save()
@@ -477,8 +477,8 @@ class AssemblingInspectionInputAdmin(admin.ModelAdmin):
         obj = form.instance
         total_defects = sum([defect.qty for defect in obj.defects.all()])
         obj.defect_quantity = total_defects
-        if obj.inspection_quantity and obj.inspection_quantity > 0:
-            obj.defect_rate = total_defects / obj.inspection_quantity
+        if obj.qty_check_hours and obj.qty_check_hours > 0:
+            obj.defect_rate = total_defects / obj.qty_check_hours
         else:
             obj.defect_rate = 0.0
         obj.save()
@@ -595,8 +595,7 @@ class AssemblingInspectionInputAdmin(admin.ModelAdmin):
                                 size=str(get_val(['size', 'ukuran'], "Unknown")),
                                 colour=str(get_val(['colour', 'color', 'warna'], "Unknown")),
                                 defaults={
-                                    'inspection_quantity': safe_int(get_val(['inspection quantity', 'qty inspection', 'total check'])),
-                                    'qty_check_hours': safe_int(get_val(['qty check hours', 'qty check/hours', 'qty check per hours']))
+                                    'qty_check_hours': safe_int(get_val(['qty check hours', 'qty check/hours', 'qty check per hours', 'inspection quantity', 'qty inspection', 'total check']))
                                 }
                             )
                             
@@ -648,8 +647,8 @@ class AssemblingInspectionInputAdmin(admin.ModelAdmin):
                             # Update defect summary
                             total_defects = sum([defect.qty for defect in inspection.defects.all()])  # type: ignore[attr-defined]
                             inspection.defect_quantity = total_defects
-                            if inspection.inspection_quantity and inspection.inspection_quantity > 0:
-                                inspection.defect_rate = total_defects / inspection.inspection_quantity
+                            if inspection.qty_check_hours and inspection.qty_check_hours > 0:
+                                inspection.defect_rate = total_defects / inspection.qty_check_hours
                             else:
                                 inspection.defect_rate = 0.0
                             inspection.save()

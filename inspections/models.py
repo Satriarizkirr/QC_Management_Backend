@@ -99,7 +99,6 @@ class AssemblingInspection(models.Model):
     size = models.CharField(max_length=50)
     colour = models.CharField(max_length=50)
     
-    inspection_quantity = models.IntegerField(default=0)
     qty_check_hours = models.IntegerField(default=0)
     defect_quantity = models.IntegerField(default=0)
     defect_rate = models.FloatField(default=0.0)

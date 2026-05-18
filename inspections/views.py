@@ -2,8 +2,8 @@ from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db.models import Sum, Count
-from .models import Inspection, DefectDetail
-from .serializers import InspectionSerializer, DefectDetailSerializer
+from .models import Inspection, DefectDetail, AssemblingInspection, AssemblingDefectDetail
+from .serializers import InspectionSerializer, DefectDetailSerializer, AssemblingInspectionSerializer, AssemblingDefectDetailSerializer
 
 class DashboardStatsView(APIView):
     def get(self, request):
@@ -30,7 +30,7 @@ class DashboardStatsView(APIView):
         if end_date: inspections = inspections.filter(date__lte=end_date)
 
         totals = inspections.aggregate(
-            total_production=Sum('inspection_quantity'),
+            total_production=Sum('qty_check_hours'),
             total_checked=Sum('qty_check_hours')
         )
         total_production = totals['total_production'] or 0
@@ -67,7 +67,7 @@ class DashboardStatsView(APIView):
 
         # Trend Data
         trend_headers = inspections.values('date').annotate(
-            production=Sum('inspection_quantity'),
+            production=Sum('qty_check_hours'),
             checked=Sum('qty_check_hours')
         ).order_by('date')
         
@@ -149,14 +149,14 @@ class DashboardStatsView(APIView):
         weekly_inspections = base_inspections.filter(date__gte=week_ago)
         monthly_inspections = base_inspections.filter(date__gte=month_ago)
 
-        w_header = weekly_inspections.aggregate(prod=Sum('inspection_quantity'), chk=Sum('qty_check_hours'))
+        w_header = weekly_inspections.aggregate(prod=Sum('qty_check_hours'), chk=Sum('qty_check_hours'))
         w_defects = defects.filter(inspection__date__gte=week_ago).aggregate(total_def=Sum('qty'))
         
         w_chk = w_header['chk'] or 0
         w_def = w_defects['total_def'] or 0
         w_rate = (w_def / w_chk * 100) if w_chk > 0 else 0
 
-        m_header = monthly_inspections.aggregate(prod=Sum('inspection_quantity'), chk=Sum('qty_check_hours'))
+        m_header = monthly_inspections.aggregate(prod=Sum('qty_check_hours'), chk=Sum('qty_check_hours'))
         m_defects = defects.filter(inspection__date__gte=month_ago).aggregate(total_def=Sum('qty'))
         
         m_chk = m_header['chk'] or 0
@@ -356,3 +356,11 @@ class InspectionViewSet(viewsets.ModelViewSet):
 class DefectDetailViewSet(viewsets.ModelViewSet):
     queryset = DefectDetail.objects.all()
     serializer_class = DefectDetailSerializer
+
+class AssemblingInspectionViewSet(viewsets.ModelViewSet):
+    queryset = AssemblingInspection.objects.all().order_by('-created_at')
+    serializer_class = AssemblingInspectionSerializer
+
+class AssemblingDefectDetailViewSet(viewsets.ModelViewSet):
+    queryset = AssemblingDefectDetail.objects.all()
+    serializer_class = AssemblingDefectDetailSerializer
